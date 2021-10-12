@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import FBSDKCoreKit
+import FBSDKCoreKit_Basics
 
 public class SwiftFacebookAppEventsPlugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -10,7 +11,7 @@ public class SwiftFacebookAppEventsPlugin: NSObject, FlutterPlugin {
         // Required for FB SDK 9.0, as it does not initialize the SDK automatically any more.
         // See: https://developers.facebook.com/blog/post/2021/01/19/introducing-facebook-platform-sdk-version-9/
         // "Removal of Auto Initialization of SDK" section
-        instance.initializeSDK()
+        ApplicationDelegate.shared.initializeSDK()
 
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
@@ -114,18 +115,19 @@ public class SwiftFacebookAppEventsPlugin: NSObject, FlutterPlugin {
         result(nil)
     }
 
-    private func handleSetUserData(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    private func handleSetUserData(_ call: FlutterMethodCall, result: @escaping FlutterResult) {        
         let arguments = call.arguments as? [String: Any] ?? [String: Any]()
-        AppEvents.setUserData(arguments["email"] as? String, forType: AppEvents.UserDataType.email)
-        AppEvents.setUserData(arguments["firstName"] as? String, forType: AppEvents.UserDataType.firstName)
-        AppEvents.setUserData(arguments["lastName"] as? String, forType: AppEvents.UserDataType.lastName)
-        AppEvents.setUserData(arguments["phone"] as? String, forType: AppEvents.UserDataType.phone)
-        AppEvents.setUserData(arguments["dateOfBirth"] as? String, forType: AppEvents.UserDataType.dateOfBirth)
-        AppEvents.setUserData(arguments["gender"] as? String, forType: AppEvents.UserDataType.gender)
-        AppEvents.setUserData(arguments["city"] as? String, forType: AppEvents.UserDataType.city)
-        AppEvents.setUserData(arguments["state"] as? String, forType: AppEvents.UserDataType.state)
-        AppEvents.setUserData(arguments["zip"] as? String, forType: AppEvents.UserDataType.zip)
-        AppEvents.setUserData(arguments["country"] as? String, forType: AppEvents.UserDataType.country)
+
+        AppEvents.setUserData(arguments["email"] as? String, forType: FBSDKAppEventUserDataType.email)
+        AppEvents.setUserData(arguments["firstName"] as? String, forType: FBSDKAppEventUserDataType.firstName)
+        AppEvents.setUserData(arguments["lastName"] as? String, forType: FBSDKAppEventUserDataType.lastName)
+        AppEvents.setUserData(arguments["phone"] as? String, forType: FBSDKAppEventUserDataType.phone)
+        AppEvents.setUserData(arguments["dateOfBirth"] as? String, forType: FBSDKAppEventUserDataType.dateOfBirth)
+        AppEvents.setUserData(arguments["gender"] as? String, forType: FBSDKAppEventUserDataType.gender)
+        AppEvents.setUserData(arguments["city"] as? String, forType: FBSDKAppEventUserDataType.city)
+        AppEvents.setUserData(arguments["state"] as? String, forType: FBSDKAppEventUserDataType.state)
+        AppEvents.setUserData(arguments["zip"] as? String, forType: FBSDKAppEventUserDataType.zip)
+        AppEvents.setUserData(arguments["country"] as? String, forType: FBSDKAppEventUserDataType.country)
 
         result(nil)
     }
@@ -137,16 +139,11 @@ public class SwiftFacebookAppEventsPlugin: NSObject, FlutterPlugin {
     }
 
     private func handleUpdateUserProperties(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        let arguments = call.arguments as? [String: Any] ?? [String: Any]()
-        let parameters =  arguments["parameters"] as! [String: Any]
-
-        AppEvents.updateUserProperties( parameters, handler: { (connection, response, error) in
-            if error != nil {
-                result(nil)
-            } else {
-                result(response)
-            }
-        })
+        // Seems to have been removed in iOS SDK but only deprecated in the Android SDK
+        //  - iOS removal note: https://github.com/facebook/facebook-ios-sdk/blob/0e1d8774db783d85bd8fc3b53ec96444c048ae42/CHANGELOG.md#removed
+        //  - Android deprecation: https://github.com/facebook/facebook-android-sdk/blob/9da80baea0d23a82ce797e17bd4bc0e0d75b3912/facebook-core/src/main/java/com/facebook/appevents/AppEventsLogger.kt#L633 
+        // Leave this one here for until fully removed in SDK v12
+        result(nil)
     }
 
     private func handleSetAutoLogAppEventsEnabled(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -181,9 +178,5 @@ public class SwiftFacebookAppEventsPlugin: NSObject, FlutterPlugin {
         let enabled = arguments["enabled"] as! Bool
         Settings.setAdvertiserTrackingEnabled(enabled)        
         result(nil)
-    }
-
-    public func initializeSDK() {
-        ApplicationDelegate.initializeSDK(nil)
     }
 }
